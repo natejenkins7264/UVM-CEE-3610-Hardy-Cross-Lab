@@ -1,1 +1,26 @@
-
+feet_to_meters:float
+psi_to_pascals:float
+inches_to_feet :int
+gallons_to_cubic_feet:float
+final_flow_rate_pipe:list
+flow_rate_node: list
+roughness_coeff:list
+n :float
+m: float
+delta_q :float
+new_flow : float
+headloss : float
+final_pressure : list
+elevation: int
+f: float
+index: int
+length: list
+index:int
+index = 0
+length = 1500,400,600,800,700,1000,750
+flow_rate_node = 2.777574,-1.215614,-1.215613,-1.52334,2.39444,-1.21613
+delta_q = 1
+n = 1.852
+m = 4.8704
+roughness_coeff = 100,100,120,110,110,90,100
+while delta_q > 0.0001:
