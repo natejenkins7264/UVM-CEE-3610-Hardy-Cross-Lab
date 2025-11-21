@@ -1,3 +1,4 @@
+#declaring variables
 feet_to_meters:float
 psi_to_pascals:float
 inches_to_feet :int
@@ -5,22 +6,107 @@ gallons_to_cubic_feet:float
 final_flow_rate_pipe:list
 flow_rate_node: list
 roughness_coeff:list
-n :float
-m: float
+n : float
+m : float
 delta_q :float
 new_flow : float
-headloss : float
+headloss : dict
+flows_in_pipes : dict
 final_pressure : list
 elevation: int
 f: float
 index: int
 length: list
 index:int
+k: float
+delta_hl = float
+delta_q_sum = float
+diameters: list
+#headloss will be changed in the loops
+headloss = {
+    "pipe 1": 1,
+    "pipe 2": 1,
+    "pipe 3": 1,
+    "pipe 4": 1,
+    "pipe 5": 1,
+    "pipe 6": 1,
+    "pipe 7": 1
+}
+#constant
+inches_to_feet = 12
+#index variable is to prevent infinite loop
 index = 0
 length = 1500,400,600,800,700,1000,750
 flow_rate_node = 2.777574,-1.215614,-1.215613,-1.52334,2.39444,-1.21613
-delta_q = 1
+#initial guesses
+flows_in_pipes = {
+    "pipe 1" : 0.65,
+    "pipe 2" : 2.12574,
+    "pipe 3" : 0.910126,
+    "pipe 4" : 0.43667,
+    "pipe 5" : 0.43667,
+    "pipe 6" : 1.95777,
+    "pipe 7" : 0.7421
+}
+#list of diameters
+diameters = 10,10,10,8,8,10,10
+#our parameter for the loops is the sum of all headloss adjustments
+#It's set to 1 to start the loop
+delta_q_sum = 1.00
+#constants
 n = 1.852
 m = 4.8704
+k = 4.727
+# roughness list
 roughness_coeff = 100,100,120,110,110,90,100
-while delta_q > 0.0001:
+#initial headlosses
+headloss["pipe 1"] = (k*length[0]*abs(flows_in_pipes["pipe 1"])**n)/(roughness_coeff[0]**n*(diameters[0]*inches_to_feet)**m)
+headloss["pipe 2"] = (k*length[1]*abs(flows_in_pipes["pipe 2"])**n)/(roughness_coeff[1]**n*(diameters[1]*inches_to_feet)**m)
+headloss["pipe 3"] = (k*length[2]*abs(flows_in_pipes["pipe 3"])**n)/(roughness_coeff[2]**n*(diameters[2]*inches_to_feet)**m)
+headloss["pipe 4"] = (k*length[3]*abs(flows_in_pipes["pipe 4"])**n)/(roughness_coeff[3]**n*(diameters[3]*inches_to_feet)**m)
+headloss["pipe 5"] = (k*length[4]*abs(flows_in_pipes["pipe 5"])**n)/(roughness_coeff[4]**n*(diameters[4]*inches_to_feet)**m)
+headloss["pipe 6"] = (k*length[5]*abs(flows_in_pipes["pipe 6"])**n)/(roughness_coeff[5]**n*(diameters[5]*inches_to_feet)**m)
+headloss["pipe 7"] = (k*length[6]*abs(flows_in_pipes["pipe 7"])**n)/(roughness_coeff[6]**n*(diameters[6]*inches_to_feet)**m)
+#loop 1 headlosses
+while delta_q_sum > 0.0001 and index < 1000:
+    delta_q_sum = 0
+    delta_q = -(headloss["pipe 1"]+headloss["pipe 2"]+headloss["pipe 3"]+headloss["pipe 4"])/(n*((abs(headloss["pipe 1"])/flows_in_pipes["pipe 1"])+(abs(headloss["pipe 1"])/flows_in_pipes["pipe 3"])+(abs(headloss["pipe 1"])/flows_in_pipes["pipe 2"])+(abs(headloss["pipe 1"])/flows_in_pipes["pipe 4"])))
+    delta_q_sum = delta_q_sum + abs(delta_q)
+    flows_in_pipes["pipe 1"] = flows_in_pipes["pipe 1"] + delta_q
+    headloss["pipe 1"] = (k*length[0]*abs(flows_in_pipes["pipe 1"])**n)/(roughness_coeff[0]**n*(diameters[0]*inches_to_feet)**m)
+    delta_q = -(headloss["pipe 1"]+headloss["pipe 3"]+headloss["pipe 4"]+headloss["pipe 2"])/(n*((abs(headloss["pipe 3"])/flows_in_pipes["pipe 1"])+(abs(headloss["pipe 3"])/flows_in_pipes["pipe 3"])+(abs(headloss["pipe 3"])/flows_in_pipes["pipe 4"])+(abs(headloss["pipe 3"])/flows_in_pipes["pipe 2"])))
+    delta_q_sum = delta_q_sum + abs(delta_q)
+    flows_in_pipes["pipe 3"] = flows_in_pipes["pipe 3"] + delta_q
+    headloss["pipe 3"] = (k * length[2] * abs(flows_in_pipes["pipe 3"]) ** n) / (roughness_coeff[2] ** n * (diameters[2] * inches_to_feet) ** m)
+    delta_q = -(headloss["pipe 1"] + headloss["pipe 3"] + headloss["pipe 4"] + headloss["pipe 2"]) / (n * ((abs(headloss["pipe 2"]) / flows_in_pipes["pipe 1"]) + (abs(headloss["pipe 2"]) / flows_in_pipes["pipe 3"]) + (abs(headloss["pipe 2"]) / flows_in_pipes["pipe 4"]) + (abs(headloss["pipe 2"]) / flows_in_pipes["pipe 2"])))
+    delta_q_sum = delta_q_sum + abs(delta_q)
+    flows_in_pipes["pipe 2"] = flows_in_pipes["pipe 2"] + delta_q
+    headloss["pipe 2"] = (k * length[1] * abs(flows_in_pipes["pipe 2"]) ** n) / (roughness_coeff[1] ** n * (diameters[1] * inches_to_feet) ** m)
+    delta_q = -(headloss["pipe 1"] + headloss["pipe 3"] + headloss["pipe 4"] + headloss["pipe 2"]) / (n * ((abs(headloss["pipe 4"]) / flows_in_pipes["pipe 1"]) + (abs(headloss["pipe 4"]) / flows_in_pipes["pipe 3"]) + (abs(headloss["pipe 4"]) / flows_in_pipes["pipe 4"]) + (abs(headloss["pipe 4"]) / flows_in_pipes["pipe 2"])))
+    delta_q_sum = delta_q_sum + abs(delta_q)
+    flows_in_pipes["pipe 4"] = flows_in_pipes["pipe 4"] + delta_q
+    headloss["pipe 4"] = (k * length[3] * abs(flows_in_pipes["pipe 4"]) ** n) / (roughness_coeff[3] ** n * (diameters[3] * inches_to_feet) ** m)
+    index += 1
+# clearing index and delta_q_sum to start the next loop
+delta_q_sum = 1.00
+index = 0
+while delta_q_sum > 0.0001 and index < 1000:
+    delta_q_sum = 0
+    delta_q = -(headloss["pipe 5"] + headloss["pipe 7"] + headloss["pipe 6"] + headloss["pipe 4"]) / (n * ( (abs(headloss["pipe 5"]) / flows_in_pipes["pipe 5"]) + abs(headloss["pipe 5"]) / flows_in_pipes["pipe 7"]+abs(headloss["pipe 5"]) / flows_in_pipes["pipe 6"]+abs(headloss["pipe 5"]) / flows_in_pipes["pipe 4"]))
+    delta_q_sum = delta_q_sum + abs(delta_q)
+    flows_in_pipes["pipe 5"] = flows_in_pipes["pipe 5"] + delta_q
+    headloss["pipe 5"] = (k * length[4] * abs(flows_in_pipes["pipe 5"]) ** n) / (roughness_coeff[4] ** n * (diameters[4] * inches_to_feet) ** m)
+    delta_q = -(headloss["pipe 5"] + headloss["pipe 7"] + headloss["pipe 6"] + headloss["pipe 4"]) / (n * ((abs(headloss["pipe 6"]) / flows_in_pipes["pipe 5"]) + abs(headloss["pipe 6"]) / flows_in_pipes["pipe 7"] + abs(headloss["pipe 6"]) / flows_in_pipes["pipe 6"] + abs(headloss["pipe 6"]) / flows_in_pipes["pipe 4"]))
+    delta_q_sum = delta_q_sum + abs(delta_q)
+    flows_in_pipes["pipe 6"] = flows_in_pipes["pipe 6"] + delta_q
+    headloss["pipe 6"] = (k * length[5] * abs(flows_in_pipes["pipe 6"]) ** n) / (roughness_coeff[5] ** n * (diameters[5] * inches_to_feet) ** m)
+    delta_q = -(headloss["pipe 5"] + headloss["pipe 7"] + headloss["pipe 6"] + headloss["pipe 4"]) / (n * ((abs(headloss["pipe 7"]) / flows_in_pipes["pipe 5"]) + abs(headloss["pipe 7"]) / flows_in_pipes["pipe 7"] + abs(headloss["pipe 7"]) / flows_in_pipes["pipe 6"] + abs(headloss["pipe 7"]) / flows_in_pipes["pipe 4"]))
+    delta_q_sum = delta_q_sum + abs(delta_q)
+    headloss["pipe 7"] = (k * length[6] * abs(flows_in_pipes["pipe 7"]) ** n) / (roughness_coeff[6] ** n * (diameters[6] * inches_to_feet) ** m)
+    delta_q = -(headloss["pipe 5"] + headloss["pipe 7"] + headloss["pipe 6"] + headloss["pipe 4"]) / (n * ((abs(headloss["pipe 4"]) / flows_in_pipes["pipe 5"]) + abs(headloss["pipe 4"]) / flows_in_pipes["pipe 7"] + abs(headloss["pipe 4"]) / flows_in_pipes["pipe 6"] + abs(headloss["pipe 4"]) /flows_in_pipes["pipe 4"]))
+    delta_q_sum = delta_q_sum + abs(delta_q)
+    headloss["pipe 4"] = (k * length[3] * abs(flows_in_pipes["pipe 4"]) ** n) / (roughness_coeff[3] ** n * (diameters[3] * inches_to_feet) ** m)
+    index += 1
+delta_q_sum = 1.00
+index = 0
+# We plan on doing loop 3 in the same way
